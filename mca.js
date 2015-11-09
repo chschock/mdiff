@@ -215,9 +215,7 @@ function max_cost_assignment(mat)
     function add_to_tree(x, greedy_break)
     {
         if(xy[x] != -1) {   // not for root of path
-            var y = xy[x];
-            T[y] = true;
-            rev_path[x] = slackx[y];
+            T[xy[x]] = true;
         }
 
         q[q_back++] = x;
@@ -238,10 +236,15 @@ function max_cost_assignment(mat)
                 slackx[y] = x;
             }
 
-            // condition leads to an immediate match in explore_improved_eq_subgraph
-            if (greedy_break && slack[y] == 0 && !T[y] && yx[y] == -1) break;
+            if (greedy_break && slack[y] == 0 && !T[y]) {
+                if (slack0_pivot == -1) slack0_pivot = y;
+                // condition leads immediately to a match in grow_eq_subgraph
+                if (yx[y] == -1) {
+                    slack0_pivot = y;
+                    break;
+                }
+            }
         }
-
         // check_slack(slack, slackx, mat, lx, ly);
     }
 
@@ -282,6 +285,7 @@ function max_cost_assignment(mat)
                         break;
                     }
 
+                    rev_path[yx[y]] = x;
                     add_to_tree(yx[y], false);
                 }
             }
@@ -308,42 +312,47 @@ function max_cost_assignment(mat)
             ly[xy[x]] += delta;
         }
 
-        slack_pivot = -1;
+        slack0_pivot = -1;
         for (var y = 0; y < mat.nc; y++) {
             if (!T[y]) {
                 slack[y] -= delta;
                 if (slack[y] == 0) {
                     // store the first with ![T[y] && slack[y]==0, it exists
-                    if (slack_pivot == -1) slack_pivot = y;
-                    // but if possible, the last with !T[y] && slack[y] == 0 && yx[y] == -1
-                    if (yx[y] == -1) slack_pivot = y;
+                    if (slack0_pivot == -1) slack0_pivot = y;
+                    // condition leads immediately to a match in grow_eq_subgraph
+                    if (yx[y] == -1) {
+                        slack0_pivot = y;
+                        break;
+                    }
                 }
             }
         }
     }
 
     // grow path in the equality subgraph
-    function explore_improved_eq_subgraph()
+    function grow_eq_subgraph()
     {
         // search all y: this ensures path augmentation
-        for (var y = slack_pivot; y < mat.nc; ++y)
+        // for (var y = slack0_pivot; y < mat.nc; ++y)
+        while (slack0_pivot != -1)
         {
-            if (!T[y] && slack[y] == 0) {
-
-                if (yx[y] == -1)    // if y is unmatched
-                {
-                    augment(slackx[y], y);
-                    stat_lower++; // stat
-                    break;
-                }
-                else
-                {
-                    stat_marks++; // stat
-                    mark_pos[match_cnt] ++;
-                    // if (!S[yx[y]])     // never false because: S[xy[y]] => T[y]
-                    add_to_tree(yx[y], true);
-                    // else T[y] = true; // is true anyways, as yx[y] cannot be the path root
-                }
+            var y = slack0_pivot;
+            slack0_pivot = -1;
+            // if (! (!T[y] && slack[y] == 0)) break;
+            if (yx[y] == -1)    // if y is unmatched
+            {
+                augment(slackx[y], y);
+                stat_lower++; // stat
+                break;
+            }
+            else
+            {
+                stat_marks++; // stat
+                mark_pos[match_cnt] ++;
+                // if (!S[yx[y]])     // never false because: S[xy[y]] => T[y]
+                rev_path[yx[y]] = slackx[y];
+                add_to_tree(yx[y], true);
+                // else T[y] = true; // is true anyways, as yx[y] cannot be the path root
             }
         }
     }
@@ -449,7 +458,7 @@ function max_cost_assignment(mat)
         // augment path to unmatched y
         while (!found_augmentation)
         {
-            var slack_pivot = -1;
+            var slack0_pivot = -1;
 
             explore_eq_subgraph();
 
@@ -459,7 +468,7 @@ function max_cost_assignment(mat)
 
             q_front = q_back;   // don't loose old entries of q; need them for sparse resetting
 
-            explore_improved_eq_subgraph();
+            grow_eq_subgraph();
         }
 
         // flip edges along augmenting path, thereby growing the matching by one
