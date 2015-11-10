@@ -226,6 +226,7 @@ function max_cost_assignment(mat)
         for (var y=0; y<mat.nc; y++)
         {
             var cxy = 0;
+            // merge mat.c[x] into cost(x, )
             if (i_y < mat.y[x].length && y == mat.y[x][i_y]) {
                 cxy = mat.c[x][i_y];
                 i_y ++;
@@ -338,6 +339,14 @@ function max_cost_assignment(mat)
         {
             var y = slack0_pivot;
             slack0_pivot = -1;
+
+            /* optimization idea: if vertex is matched with 0 cost, remove match
+             * couldn't prove correctness of this
+            if (yx[y] != -1 && mat.cost(yx[y], y) == 0) {
+                xy[yx[y]] = -1;
+                yx[y] = -1;
+            } */
+
             // if (! (!T[y] && slack[y] == 0)) break;
             if (yx[y] == -1)    // if y is unmatched
             {
@@ -387,17 +396,19 @@ function max_cost_assignment(mat)
         /* Algorithm performance strongly depends on the successive choice of x. We seperate
          * sparse rows from the rest and sort them by decreasing cost, to prefer longer matches.
          * The rest is sorted by decreasing sparsity, to match rows with many options at the end.
+         * Zeros are put at the very end. Cost refers to row maxima - the most probable match.
         */
         var sparse_thresh = 5;  // threshold below which row is considered sparse
         function heuristic_order(i, j) {
+            var secondary = (i - j) / mat.nc + i / mat.nc / mat.nc;
             if (mat.y[i].length > sparse_thresh && mat.y[j].length > sparse_thresh)
-                return (mat.y[i].length - mat.y[j].length)  + (i - j) / mat.nc;
+                return (mat.y[i].length - mat.y[j].length)  + secondary;
             else if (mat.y[i].length > sparse_thresh || rowmax[i] == 0)
-                return 1 + (rowmax[i] == 0);
+                return  1 + (rowmax[i] == 0);
             else if (mat.y[j].length > sparse_thresh || rowmax[j] == 0)
                 return -1 - (rowmax[j] == 0);
-            else  // old order scheme
-                return (rowmax[j] - rowmax[i]) + (i - j) / mat.nc + (i - j) / mat.nc + i / mat.nc / mat.nc;
+            else
+                return (rowmax[j] - rowmax[i]) + secondary;
         }
         row_order.sort(heuristic_order);
 
