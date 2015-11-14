@@ -301,8 +301,8 @@ function max_cost_assignment(mat)
         stat_improve++; // stat
 
         for (var y = 0; y < mat.nc; y++) {
-            if (!T[y])
-                delta = Math.min(delta, slack[y]);
+            if (!T[y] && slack[y] < delta)
+                delta = slack[y];
         }
 
         // adapt node labels: q holds all nodes in S
