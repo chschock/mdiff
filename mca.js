@@ -203,11 +203,11 @@ https://www.topcoder.com/community/data-science/data-science-tutorials/assignmen
 
 function max_cost_assignment(mat)
 {
-    var lx = Array(mat.nr), ly = Array(mat.nc);
-    var xy = Array(mat.nr), yx = Array(mat.nc);
-    var S  = Array(mat.nr),  T = Array(mat.nc);
-    var slack = Array(mat.nc);
-    var slackx = Array(mat.nc);
+    var lx = Array(mat.nr), ly = Array(mat.nc+mat.nr);
+    var xy = Array(mat.nr), yx = Array(mat.nc+mat.nr);
+    var S  = Array(mat.nr),  T = Array(mat.nc+mat.nr);
+    var slack = Array(mat.nc+mat.nr);
+    var slackx = Array(mat.nc+mat.nr);
     var rev_path = Array(mat.nr);
 
     // debug
@@ -224,15 +224,10 @@ function max_cost_assignment(mat)
         S[x] = true;
 
         // update slack and slackx
-        var i_y = 0;
-        for (var y=0; y<mat.nc; y++)
+        for (var i_y=0; i_y<mat.y[x].length; i_y++)
         {
-            var cxy = 0;
-            // merge mat.c[x] into cost(x, )
-            if (i_y < mat.y[x].length && y == mat.y[x][i_y]) {
-                cxy = mat.c[x][i_y];
-                i_y ++;
-            }
+            var y = mat.y[x][i_y];
+            var cxy = mat.c[x][i_y];
 
             if (lx[x] + ly[y] - cxy < slack[y]) {
                 slack[y] = lx[x] + ly[y] - cxy;
@@ -260,6 +255,8 @@ function max_cost_assignment(mat)
     // try to grow a path in the equality subgraph
     function explore_eq_subgraph()
     {
+        if (debug) console.log('explore equality subgraph');
+
         while (q_back > q_front && !found_augmentation)
         {
             x = q[q_front++];
@@ -298,14 +295,16 @@ function max_cost_assignment(mat)
     // improve labels lx, ly to grow the equality subgraph
     function improve_labelling()
     {
-        var delta = Number.MAX_SAFE_INTEGER;
-
+        if (debug) console.log('improve labelling');
         stat_improve++; // stat
 
-        for (var y = 0; y < mat.nc; y++) {
+        var delta = Number.MAX_SAFE_INTEGER;
+        for (var y = 0; y < mat.nc+mat.nr; y++) {
             if (!T[y] && slack[y] < delta)
                 delta = slack[y];
         }
+
+        if (debug && delta > 1000000000) alert('no minimal delta found');
 
         // adapt node labels: q holds all nodes in S
         lx[q[0]] -= delta;
@@ -314,10 +313,12 @@ function max_cost_assignment(mat)
             lx[x] -= delta;
             ly[xy[x]] += delta;
         }
+        // for (var x=0; x<mat.nr; x++) if (S[x]) lx[x] -= delta;
+        // for (var y=0; y<mat.nc+mat.nr; y++) if (T[y]) ly[y] += delta;
 
         slack0_pivot = -1;
-        for (var y = 0; y < mat.nc; y++) {
-            if (!T[y]) {
+        for (var y = 0; y < mat.nc+mat.nr; y++) {
+            if (!T[y] && slack[y] < Number.MAX_SAFE_INTEGER) {
                 slack[y] -= delta;
                 if (slack[y] == 0) {
                     // store the first with ![T[y] && slack[y]==0, it exists
@@ -335,6 +336,7 @@ function max_cost_assignment(mat)
     // grow path in the equality subgraph
     function grow_eq_subgraph()
     {
+        if (debug) console.log('grow equality subgraph');
         // search all y: this ensures path augmentation
         // for (var y = slack0_pivot; y < mat.nc; ++y)
         while (slack0_pivot != -1)
@@ -371,6 +373,12 @@ function max_cost_assignment(mat)
     // start with nothing matched
     xy.init(-1);
     yx.init(-1);
+
+    // prepare sparse problem
+    for (var x=0; x<mat.nr; x++) {
+        mat.y[x].push(mat.nc + x);
+        mat.c[x].push(0);
+    }
 
     // setup lx, ly feasible
     lx = Array(mat.nr);
@@ -450,6 +458,7 @@ function max_cost_assignment(mat)
 
         // init slack array (add_to_tree will completely rewrite slackx)
         slack.init(Number.MAX_SAFE_INTEGER);
+        slackx.init(-1);
 
         // select unmatched x as path root
         for (var x_o = 0; x_o < mat.nr; x_o ++)
@@ -485,6 +494,7 @@ function max_cost_assignment(mat)
         }
 
         // flip edges along augmenting path, thereby growing the matching by one
+        if (debug) console.log('flipping edges');
         for (var cx = x_aug, cy = y_aug, ty;
              cx != -1;
              cx = rev_path[cx], cy = ty)
@@ -493,6 +503,7 @@ function max_cost_assignment(mat)
             yx[cy] = cx;
             xy[cx] = cy;
         }
+        if (debug) console.log('flipped edges');
 
         // the following early stopping criterion is correct if:
         // there has to be some free x, with some y*, with better cost(x, y*) than cost(yx[y], y)
