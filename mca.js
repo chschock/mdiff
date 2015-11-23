@@ -213,11 +213,14 @@ function max_cost_assignment(mat)
     // debug
     var mark_pos = Array(mat.nr); mark_pos.init(0);
 
+    var i_y_x = Array(mat.nr);
+    var y_merge = Array(mat.nc+mat.nr);
+    var y_merge_back = 0;
+
     function relevant_columns()
     {
-        var i_y_x = Array(mat.nr);
-        var y_merge = Array();
         var y_next = Number.MAX_SAFE_INTEGER;
+        y_merge_back = 0;
 
         for (var i=0; i<q_back; i++) {
             var x = q[i];
@@ -228,17 +231,15 @@ function max_cost_assignment(mat)
 
         while (y_next < Number.MAX_SAFE_INTEGER) {
             var y_cur = y_next;
-            y_merge.push(y_next);
+            y_merge[y_merge_back++] = y_cur;
             y_next = Number.MAX_SAFE_INTEGER;
             for (var i=0; i<q_back; i++) {
                 var x = q[i];
                 while (i_y_x[x] < mat.y[x].length && mat.y[x][i_y_x[x]] <= y_cur) i_y_x[x] ++;
                 if (i_y_x[x] < mat.y[x].length) 
                     y_next = Math.min(y_next, mat.y[x][i_y_x[x]]);
-                // y_next = Math.min(y_next, mat.y[x][i_y_x[x]]);
             }
         }
-        return y_merge;
     }
 
     // compute slack and slackx
@@ -326,14 +327,13 @@ function max_cost_assignment(mat)
         if (debug) console.log('improve labelling');
         stat_improve++; // stat
 
-        var y_merge = relevant_columns();
         var delta = Number.MAX_SAFE_INTEGER;
 
         // for (var y=0; y<mat.nc+mat.nr; y++)
         //     if (slack[y] < Number.MAX_SAFE_INTEGER && y_merge.indexOf(y) == -1) // && mat.cost(slackx[y], y) > 0)
         //         console.log(y_merge + ' y ' + y + ' slack[y] ' + slack[y] + ' cost ' + mat.cost(slackx[y], y));        
         
-        for (var i_y = 0; i_y < y_merge.length; i_y++) {
+        for (var i_y = 0; i_y < y_merge_back; i_y++) {
             var y = y_merge[i_y];
             if (!T[y] && slack[y] < delta)
                 delta = slack[y];
@@ -352,7 +352,7 @@ function max_cost_assignment(mat)
         // for (var y=0; y<mat.nc+mat.nr; y++) if (T[y]) ly[y] += delta;
 
         slack0_pivot = -1;
-        for (var i_y = 0; i_y < y_merge.length; i_y++) {
+        for (var i_y = 0; i_y < y_merge_back; i_y++) {
             var y = y_merge[i_y];
             if (!T[y] && slack[y] < Number.MAX_SAFE_INTEGER) {
                 slack[y] -= delta;
@@ -521,6 +521,8 @@ function max_cost_assignment(mat)
             explore_eq_subgraph();
 
             if (found_augmentation) break;
+
+            relevant_columns();
 
             improve_labelling();
 
