@@ -115,8 +115,8 @@ function makeCost(str_a, str_b, minMatch)
 
         for(var ind=0, prev_ind=0; ind<y_indices.length || prev_ind < prev_y_indices.length;)
         {
-            var cur_y_ind = ind < y_indices.length ? y_indices[ind] : Number.MAX_SAFE_INTEGER;
-            var prev_y_ind = prev_ind < prev_y_indices.length ? prev_y_indices[prev_ind] : Number.MAX_SAFE_INTEGER;
+            var cur_y_ind = ind < y_indices.length ? y_indices[ind] : MSI;
+            var prev_y_ind = prev_ind < prev_y_indices.length ? prev_y_indices[prev_ind] : MSI;
 
             var cxy = 0;
             var y_ind;
@@ -217,9 +217,9 @@ function max_cost_assignment(mat)
     var y_merge = Array(mat.nc+mat.nr);
     var y_merge_back = 0;
 
-    function relevant_columns()
+    function merge_relevant_columns()
     {
-        var y_next = Number.MAX_SAFE_INTEGER;
+        var y_next = MSI;
         y_merge_back = 0;
 
         for (var i=0; i<q_back; i++) {
@@ -229,10 +229,10 @@ function max_cost_assignment(mat)
                 y_next = Math.min(y_next, mat.y[x][0]);
         }
 
-        while (y_next < Number.MAX_SAFE_INTEGER) {
+        while (y_next < MSI) {
             var y_cur = y_next;
             y_merge[y_merge_back++] = y_cur;
-            y_next = Number.MAX_SAFE_INTEGER;
+            y_next = MSI;
             for (var i=0; i<q_back; i++) {
                 var x = q[i];
                 while (i_y_x[x] < mat.y[x].length && mat.y[x][i_y_x[x]] <= y_cur) i_y_x[x] ++;
@@ -327,12 +327,13 @@ function max_cost_assignment(mat)
         if (debug) console.log('improve labelling');
         stat_improve++; // stat
 
-        var delta = Number.MAX_SAFE_INTEGER;
+        var delta = MSI;
 
         // for (var y=0; y<mat.nc+mat.nr; y++)
-        //     if (slack[y] < Number.MAX_SAFE_INTEGER && y_merge.indexOf(y) == -1) // && mat.cost(slackx[y], y) > 0)
+        //     if (slack[y] < MSI && y_merge.indexOf(y) == -1) // && mat.cost(slackx[y], y) > 0)
         //         console.log(y_merge + ' y ' + y + ' slack[y] ' + slack[y] + ' cost ' + mat.cost(slackx[y], y));        
         
+        // for (var y = 0; y < mat.nc+mat.nr; y++) {
         for (var i_y = 0; i_y < y_merge_back; i_y++) {
             var y = y_merge[i_y];
             if (!T[y] && slack[y] < delta)
@@ -352,9 +353,10 @@ function max_cost_assignment(mat)
         // for (var y=0; y<mat.nc+mat.nr; y++) if (T[y]) ly[y] += delta;
 
         slack0_pivot = -1;
+        // for (var y = 0; y < mat.nc+mat.nr; y++) {
         for (var i_y = 0; i_y < y_merge_back; i_y++) {
             var y = y_merge[i_y];
-            if (!T[y] && slack[y] < Number.MAX_SAFE_INTEGER) {
+            if (!T[y] && slack[y] < MSI) {
                 slack[y] -= delta;
                 if (slack[y] == 0) {
                     // store the first with ![T[y] && slack[y]==0, it exists
@@ -379,13 +381,6 @@ function max_cost_assignment(mat)
         {
             var y = slack0_pivot;
             slack0_pivot = -1;
-
-            /* optimization idea: if vertex is matched with 0 cost, remove match
-             * couldn't prove correctness of this
-            if (yx[y] != -1 && mat.cost(yx[y], y) == 0) {
-                xy[yx[y]] = -1;
-                yx[y] = -1;
-            } */
 
             // if (! (!T[y] && slack[y] == 0)) break;
             if (yx[y] == -1)    // if y is unmatched
@@ -493,7 +488,7 @@ function max_cost_assignment(mat)
         var q_front = 0, q_back = 0;
 
         // init slack array (add_to_tree will completely rewrite slackx)
-        slack.init(Number.MAX_SAFE_INTEGER);
+        slack.init(MSI);
         slackx.init(-1);
 
         // select unmatched x as path root
@@ -522,7 +517,7 @@ function max_cost_assignment(mat)
 
             if (found_augmentation) break;
 
-            relevant_columns();
+            merge_relevant_columns();
 
             improve_labelling();
 
@@ -625,6 +620,7 @@ function max_cost_assignment(mat)
 var debug = false;
 var early_stop = true;
 var sort_by_cost = true;
+var MSI = Number.MAX_SAFE_INTEGER;
 
 // small
 var textA = " Lorem ipsum dolor sit amet,  adipiscing elit. Pellentesque  eros, sodales in massa ac, cursus elementum lorem. In risus vitae lacus rhoncus ultricies non tellus. Aenean scelerisque varius elit a tempus. ornare vel tortor eget lobortis. Suspendisse velit ut metus commodo placerat nec eu risus. Suspendisse sit amet sapien, cursus eros vel, accumsan risus. fringilla imperdiet libero at lobortis tristique eros egestas quam pellentesque porttitor. venenatis nec urna a ultrices. In luctus, nisi vitae  ultricies justo, a sodales magna tempus consectetur, sapien lacus dui et arcu. Sed ac egestas nibh. Curabitur sit amet lectus feugiat, egestas dolor in, condimentum ipsum. Mauris ut elementum magna varius urna. Duis vel arcu at orci fermentum rutrum. Suspendisse varius tincidunt lectus eu pulvinar. Fusce tristique non in nunc. Sed maximus eu nulla ut sodales. Curabitur metus odio, faucibus quis ullamcorper eu,  odio non tincidunt. Vestibulum a orci vel ipsum sagittis mollis tempor vitae massa. Donec sit amet vehicula augue, nec mattis mi. Nulla ut vulputate ante, vitae tempor est. In eu pellentesque dui. Donec pulvinar dolor at pellentesque convallis. Maecenas risus neque, vulputate eu ipsum quis, laoreet ornare velit. Ut nec dapibus ipsum, sed sagittis ipsum.Maecenas ac tempus nunc. In pretium diam in lectus volutpat, et faucibus neque tempus. Nullam lacinia bibendum leo sit amet ornare. Etiam tincidunt dui sit amet scelerisque tempor. Sed efficitur orci luctus blandit facilisis. Pellentesque sed bibendum neque. Nullam id lacus eros. Sed eu quam non nisl efficitur tincidunt ac eu tortor. Vivamus accumsan mauris eget velit semper tempor eu cursus sit amet risus.";
