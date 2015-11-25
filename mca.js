@@ -236,7 +236,7 @@ function max_cost_assignment(mat)
             for (var i=0; i<q_back; i++) {
                 var x = q[i];
                 while (i_y_x[x] < mat.y[x].length && mat.y[x][i_y_x[x]] <= y_cur) i_y_x[x] ++;
-                if (i_y_x[x] < mat.y[x].length) 
+                if (i_y_x[x] < mat.y[x].length)
                     y_next = Math.min(y_next, mat.y[x][i_y_x[x]]);
             }
         }
@@ -331,8 +331,8 @@ function max_cost_assignment(mat)
 
         // for (var y=0; y<mat.nc+mat.nr; y++)
         //     if (slack[y] < MSI && y_merge.indexOf(y) == -1) // && mat.cost(slackx[y], y) > 0)
-        //         console.log(y_merge + ' y ' + y + ' slack[y] ' + slack[y] + ' cost ' + mat.cost(slackx[y], y));        
-        
+        //         console.log(y_merge + ' y ' + y + ' slack[y] ' + slack[y] + ' cost ' + mat.cost(slackx[y], y));
+
         // for (var y = 0; y < mat.nc+mat.nr; y++) {
         for (var i_y = 0; i_y < y_merge_back; i_y++) {
             var y = y_merge[i_y];
@@ -349,8 +349,6 @@ function max_cost_assignment(mat)
             lx[x] -= delta;
             ly[xy[x]] += delta;
         }
-        // for (var x=0; x<mat.nr; x++) if (S[x]) lx[x] -= delta;
-        // for (var y=0; y<mat.nc+mat.nr; y++) if (T[y]) ly[y] += delta;
 
         slack0_pivot = -1;
         // for (var y = 0; y < mat.nc+mat.nr; y++) {
@@ -441,17 +439,33 @@ function max_cost_assignment(mat)
         */
         var sparse_thresh = 5;  // threshold below which row is considered sparse
         function heuristic_order(i, j) {
-            var secondary = (i - j) / mat.nc + i / mat.nc / mat.nc;
-            if (mat.y[i].length > sparse_thresh && mat.y[j].length > sparse_thresh)
-                return (mat.y[i].length - mat.y[j].length)  + secondary;
-            else if (mat.y[i].length > sparse_thresh || rowmax[i] == 0)
-                return  1 + (rowmax[i] == 0);
-            else if (mat.y[j].length > sparse_thresh || rowmax[j] == 0)
-                return -1 - (rowmax[j] == 0);
+            var secondary = (i - j) / mat.nr;
+            if (rowmax[i] == 0 && rowmax[j] == 0)
+                return i-j;
+            else if (rowmax[i] == 0)
+                return +1;
+            else if (rowmax[j] == 0)
+                return -1;
+            else if (mat.y[i].length > sparse_thresh && mat.y[j].length > sparse_thresh)
+                return (mat.y[i].length - mat.y[j].length) + secondary;
+            else if (mat.y[i].length > sparse_thresh)
+                return +1;
+            else if (mat.y[j].length > sparse_thresh)
+                return -1;
             else
-                return (rowmax[j] - rowmax[i]) + secondary;
+                return (rowmax[j] - rowmax[i]) + secondary
         }
+
         row_order.sort(heuristic_order);
+
+        if (debug) {
+            for (var z=0; z<1000; z++) {
+                var i = Math.floor(Math.random() * mat.nr), j = Math.floor(Math.random() * mat.nr);
+                var ho = heuristic_order(i, j);
+                if (ho * (row_order.indexOf(i) - row_order.indexOf(j)) < 0)
+                    console.log('inconsistent order function: z ' + z + ' i ' + i + ' j ' + j + ' ho ' + ho);
+            }
+        }
 
         if (preprocessed) break;  // sort once again after greedy match
 
