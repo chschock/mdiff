@@ -467,7 +467,7 @@ function max_cost_assignment(mat)
             }
         }
 
-        if (preprocessed) break;  // sort once again after greedy match
+        if (preprocessed || skip_preproc) break;  // sort once again after greedy match
 
         // greedy match what is possible
         for (var x_o=0; x_o<mat.nr; x_o++)
@@ -634,6 +634,7 @@ function max_cost_assignment(mat)
 var debug = false;
 var early_stop = true;
 var sort_by_cost = true;
+var skip_preproc = false;
 var MSI = Number.MAX_SAFE_INTEGER;
 
 // small
