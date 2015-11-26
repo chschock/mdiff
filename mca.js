@@ -501,9 +501,7 @@ function max_cost_assignment(mat)
     {
         var q_front = 0, q_back = 0;
 
-        // init slack array (add_to_tree will completely rewrite slackx)
         slack.init(MSI);
-        slackx.init(-1);
 
         // select unmatched x as path root
         for (var x_o = 0; x_o < mat.nr; x_o ++)
