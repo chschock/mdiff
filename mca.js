@@ -213,36 +213,42 @@ function max_cost_assignment(mat)
     // debug
     var mark_pos = Array(mat.nr); mark_pos.init(0);
 
-    var i_y_x = Array(mat.nr);
-    var y_merge = Array(mat.nc+mat.nr);
-    var y_merge_back = 0;
+    var y_merge = Array(mat.nc+mat.nr), prev_y_merge = Array(mat.nc+mat.nr);
+    var y_merge_back = 0, prev_y_merge_back;
 
-    function merge_relevant_columns()
+    function merge_relevant_columns(x)
     {
-        var y_next = MSI;
-        y_merge_back = 0;
+        if (q_back > 1) {
+            var tmp = prev_y_merge;
+            prev_y_merge = y_merge;
+            y_merge = tmp;
+            prev_y_merge_back = y_merge_back;
+            y_merge_back = 0;
 
-        for (var i=0; i<q_back; i++) {
-            var x = q[i];
-            i_y_x[x] = 0;
-            if (mat.y[x].length > 0)
-                y_next = Math.min(y_next, mat.y[x][0]);
-        }
+            var y_next = MSI;
+            if (mat.y[x].length > 0) y_next = Math.min(y_next, mat.y[x][0]);
+            if (prev_y_merge_back > 0) y_next = Math.min(y_next, prev_y_merge[0]);
 
-        while (y_next < MSI) {
-            var y_cur = y_next;
-            y_merge[y_merge_back++] = y_cur;
-            y_next = MSI;
-            for (var i=0; i<q_back; i++) {
-                var x = q[i];
-                while (i_y_x[x] < mat.y[x].length && mat.y[x][i_y_x[x]] <= y_cur) i_y_x[x] ++;
-                if (i_y_x[x] < mat.y[x].length)
-                    y_next = Math.min(y_next, mat.y[x][i_y_x[x]]);
+            var i_y = 0, prev_i_y = 0;
+            while (y_next < MSI) {
+                var y_cur = y_next;
+                y_merge[y_merge_back++] = y_cur;
+                y_next = MSI;
+
+                while (i_y < mat.y[x].length && mat.y[x][i_y] <= y_cur) i_y ++;
+                if    (i_y < mat.y[x].length) y_next = Math.min(y_next, mat.y[x][i_y]);
+
+                while (prev_i_y < prev_y_merge_back && prev_y_merge[prev_i_y] <= y_cur) prev_i_y ++;
+                if    (prev_i_y < prev_y_merge_back) y_next = Math.min(y_next, prev_y_merge[prev_i_y]);
             }
+
+        } else {
+            y_merge_back = 0;
+            for (var i_y=0; i_y < mat.y[x].length; i_y++)
+                y_merge[y_merge_back++] = mat.y[x][i_y];
         }
     }
 
-    // compute slack and slackx
     function add_to_tree(x, greedy_break)
     {
         if(xy[x] != -1) {   // not for root of path
@@ -273,6 +279,8 @@ function max_cost_assignment(mat)
             }
         }
         // check_slack(slack, slackx, mat, lx, ly);
+
+        merge_relevant_columns(x);
     }
 
     function augment(x, y) {
@@ -528,8 +536,6 @@ function max_cost_assignment(mat)
             explore_eq_subgraph();
 
             if (found_augmentation) break;
-
-            merge_relevant_columns();
 
             improve_labelling();
 
