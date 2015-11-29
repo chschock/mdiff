@@ -500,6 +500,7 @@ function max_cost_assignment(mat)
     S.init(false);
     T.init(false);
     rev_path.init(-1);
+    slack.init(MSI);
 
     var q = Array(mat.nr); // this is a queue, we maintain it manually with q_front, q_back
     var x;
@@ -509,7 +510,6 @@ function max_cost_assignment(mat)
     {
         var q_front = 0, q_back = 0;
 
-        slack.init(MSI);
 
         // select unmatched x as path root
         for (var x_o = 0; x_o < mat.nr; x_o ++)
@@ -582,6 +582,8 @@ function max_cost_assignment(mat)
             T[xy[x]] = false;
             rev_path[x] = -1;
         }
+
+        for (var i_y=0; i_y < y_merge_back; i_y++) slack[y_merge[i_y]] = MSI;
 
         // correctness check, on suboptimal matchings uncomment to check if sparse resets work
         if (debug)
