@@ -90,8 +90,8 @@ function makeCost(str_a, str_b, minMatch)
     var c = Array(a.length);
     var y = Array(a.length);
 
-    var c_cur_x = Array(a.length);  // materialized current row
-    var c_prev_x = Array(a.length); // copy of last row
+    var c_cur_x = Array(b.length);  // materialized current row
+    var c_prev_x = Array(b.length); // copy of last row
     c_cur_x.init(0);
     c_prev_x.init(0);
 
@@ -562,7 +562,7 @@ function max_cost_assignment(mat)
             var only_crap_left = true;
             for (var x=0; x<mat.nr; x++) {
                 if (xy[x] != -1) continue;
-                for (var i_y=0; i_y<mat.y[x].length - 1; i_y++) { // ignore the 0-cost node
+                for (var i_y=0; i_y<mat.y[x].length; i_y++) {
                     var y = mat.y[x][i_y];
                     if (yx[y] == -1 || mat.c[x][i_y] > mat.cost(yx[y], y)) {
                         only_crap_left = false;
