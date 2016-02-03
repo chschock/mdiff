@@ -95,8 +95,32 @@ function handleDiff(evt)
     if (!(lc.text && rc.text)) return;  // not ready
 
     var before = new Date().getTime();
-    mat = makeCost(lc.text, rc.text, minMatch);
-    maps = max_cost_assignment(mat);
+
+    var json_result
+
+    if ($('#go_backend').hasClass('active')) {
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:8080/solve",
+            // data: JSON.stringify({ person:{ firstName: "Denny", lastName: "Cherian", department: "Microsoft PSS", address: { addressline1: "Microsoft India GTSC", addressline2: "PSS - DSI", city: "Bangalore", state: "Karnataka", country: "India", pin: "560028" }, technologies: ["IIS", "ASP.NET", "JavaScript", "AJAX"] }}),
+            data: {a: lc.text, b: rc.text, minMatch:minMatch},
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (res) {
+                json_result = res;
+            },
+            error: function (request, status, errorThrown) {
+                alert(status);
+            },
+            async: false
+        });
+        mat = json_result["mca"]
+        maps = json_result["sol"]
+    } else {
+        mat = makeCost(lc.text, rc.text, minMatch);
+        maps = max_cost_assignment(mat);
+    }
+
     var after = new Date().getTime();
 
     up2date = true;
@@ -223,6 +247,11 @@ function handleColorScheme(id)
 }
 
 function handleSyntax()
+{
+    $(this).toggleClass('active');
+}
+
+function handleGoBackend()
 {
     $(this).toggleClass('active');
 }

@@ -146,6 +146,7 @@
                         <div class="btn-group " role="group">
                             <button type="button" class="btn btn-default" id="wrap" style="width:6em;">wrap text</button>
                             <button type="button" class="btn btn-default active" id="syntax" style="width:6em;">syntax</button>
+                            <button type="button" class="btn btn-default" id="go_backend" style="width:7em;">go backend</button>
                         </div>
                         </li>
                       </ul>
@@ -227,6 +228,7 @@
         document.getElementById('swap').addEventListener('click', handleSwap, false);
         document.getElementById('wrap').addEventListener('click', handleWrap, false);
         document.getElementById('syntax').addEventListener('click', handleSyntax, false);
+        document.getElementById('go_backend').addEventListener('click', handleGoBackend, false);
 
         $('input[type=file]').click( function() {$(this).val('');} );
 
