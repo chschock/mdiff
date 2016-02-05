@@ -68,6 +68,16 @@ function collapseText(text, regex)
     return res;
 }
 
+function httpGetJson(theUrl)
+{
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
+    xmlHttp.send( null );
+    // console.log(xmlHttp.responseText)
+
+    return JSON.parse(xmlHttp.responseText);
+}
+
 function handleDiff(evt)
 {
     var lc, rc;
@@ -99,21 +109,10 @@ function handleDiff(evt)
     var json_result
 
     if ($('#go_backend').hasClass('active')) {
-        $.ajax({
-            type: "GET",
-            url: "http://localhost:8080/solve",
-            // data: JSON.stringify({ person:{ firstName: "Denny", lastName: "Cherian", department: "Microsoft PSS", address: { addressline1: "Microsoft India GTSC", addressline2: "PSS - DSI", city: "Bangalore", state: "Karnataka", country: "India", pin: "560028" }, technologies: ["IIS", "ASP.NET", "JavaScript", "AJAX"] }}),
-            data: {a: lc.text, b: rc.text, minMatch:minMatch},
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (res) {
-                json_result = res;
-            },
-            error: function (request, status, errorThrown) {
-                alert(status);
-            },
-            async: false
-        });
+        json_result = httpGetJson("http://localhost:8080/solve?" +
+            "a=" + encodeURIComponent(lc.text) + "&" +
+            "b=" + encodeURIComponent(rc.text) + "&" +
+            "minMatch=" + encodeURIComponent(minMatch))
         mat = json_result["mca"]
         maps = json_result["sol"]
     } else {
