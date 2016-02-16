@@ -1,4 +1,4 @@
-src="bs_ex_files/jquery.js";
+src="../resources/bootstrap/jquery.js";
 
 var mat, maps;
 var minMatch;
