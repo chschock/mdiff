@@ -1,1 +1,216 @@
-Hallo
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="http://getbootstrap.com/favicon.ico">
+
+    <title>mDiff</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="../resources/bootstrap/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="../resources/bootstrap/starter-template.css" rel="stylesheet">
+
+    <!-- highlight.js  -->
+    <link rel="stylesheet" href="../resources/hljs/styles/default.css">
+    <script src="../resources/hljs/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- GSS engine script -->
+    <script src="../resources/gss.js"></script>
+
+    <!-- Giving GSS the document object -->
+    <script type="text/javascript">
+      window.engine = new GSS(document);
+    </script>
+
+    <style>
+        body {
+            background-color: #336699;
+        }
+        .cls-code {
+            /*white-space: nowrap;*/
+        }
+        .cls-code-nowrap {
+            display: inline-block;
+        }
+        .cls-pre {
+            line-height: 1.2em;
+        }
+        .btn-file {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-file input {
+            position: absolute;
+            top: 0;
+            right: 0;
+            min-width: 100%;
+            min-height: 100%;
+            opacity: 0;
+            cursor: inherit;
+            display: block;
+        }
+        .brand {
+            color: white;
+        }
+    </style>
+
+    <style type="text/gss">
+        .gss-not-ready {
+          opacity: 0;
+        }
+        .mybutton {
+          background: hsl(0, 0%, 90%);
+          border-radius: 6px;
+          font-family: "Helvetica-Neue", Helvetica, Arial, sans-serif;
+          padding: 15px 20px;
+        }
+        .difftext {
+            background-color: #336699;
+            /*float: none;*/
+            display: block;
+            border: 1px solid;
+            overflow: auto;
+            /*border-left: 1px solid;*/
+            top: == 50;
+            bottom: == ::window[bottom] -10;
+        }
+        .top-btn {
+            center-y: == 25;
+            size: == ::[intrinsic-size];
+        }
+        .intrinsic {
+            size: == ::[intrinsic-size];
+        }
+
+        #color-dd[top-right] == #colorscheme[bottom-right];
+        #conf-dd[top-right] == #conf[bottom-right];
+
+        #lrdiff[center-x] == ::window[center-x] !strong;
+
+        @h <::window[left]>-10-(#mdiff)-(#swap)-10-(#lfile-cont)-10-(#lrdiff)-10-(#rfile-cont)-10-(#shuf)-(#colorscheme)-10-(#conf)-10-<::window[right]>;
+
+        @h <::window[left]>-10-(#ldiv)-5-<::window[center-x]>-5-(#rdiv)-10-<::window[right]>;
+
+    </style>
+
+  </head>
+
+  <body>
+
+    <span class="navbar-brand top-btn brand" href="#" id="mdiff">mDiff</span>
+
+    <button type="button" class="btn btn-sm btn-primary top-btn" id="swap">swap texts</button>
+    <span type="button" class="btn btn-sm btn-primary btn-file top-btn" id="lfile-cont">
+        <!-- <span class="glyphicon glyphicon-floppy-open" aria-hidden="true"></span> -->
+        <span>Load</span><input type="file" id="lfile">
+    </span>
+    <button type="button" class="btn btn-sm btn-default top-btn" id="lrdiff">
+        <span>Update</span>
+    </button>
+    <span type="button" class="btn btn-sm btn-primary btn-file top-btn" id="rfile-cont">
+        <!-- <span class="glyphicon glyphicon-floppy-open" aria-hidden="true"></span> -->
+        <span>Load</span><input type="file" id="rfile">
+    </span>
+    <button type="button" class="btn btn-sm btn-primary top-btn" id="shuf">shuffle right</button>
+
+    <div class="btn-group btn-group-sm top-btn" role="group" id="foo">
+      <button type="button" id="colorscheme" class="btn btn-sm btn-primary dropdown-toggle top-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span id="color-text">Colors 1</span>
+        <span class="caret"> </span>
+      </button>
+      <ul class="dropdown-menu intrinsic" id="color-dd">
+          <li><a href="#" id="scheme-1">Colors 1</a></li>
+          <li><a href="#" id="scheme-2">Colors 2</a></li>
+          <li><a href="#" id="scheme-3">Colors 3</a></li>
+          <li><a href="#" id="scheme-4">Colors off</a></li>
+      </ul>
+    </div>
+
+    <div class="btn-group btn-group-sm top-btn" role="group" id="bar">
+      <button type="button" class="btn btn-sm btn-primary dropdown-toggle top-btn" id="conf" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu intrinsic" id="conf-dd">
+        <div class="input-group input-group-sm" style='width: 1em;'>
+          <span class="input-group-addon" id="basic-addon1">min match</span>
+          <input type="text" class="form-control" value="10" aria-describedby="basic-addon1"
+          style='width: 4em;' onkeyup="this.value=this.value.replace(/[^\d]/,'')" id='minmatch'>
+          <span class="input-group-addon" id="basic-addon1">merge regex</span>
+          <input type="text" class="form-control" value="\s+" aria-describedby="basic-addon1"
+          style='width: 8em;' id='collapse'>
+        </div>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-default" id="wrap" style="width:6em;">wrap text</button>
+            <button type="button" class="btn btn-default active" id="syntax" style="width:6em;">syntax</button>
+            <button type="button" class="btn btn-default" id="go_backend" style="width:7em;">go backend</button>
+        </div>
+      </ul>
+    </div>
+
+    <div class="difftext" id="ldiv">
+        <code class="cls-code cls-code-nowrap" id="lcode">
+            <span id="lfilename"></span>
+            <pre class="cls-pre" contentEditable="true" id="ltext"></pre>
+        </code>
+    </div>
+    <div class="difftext" id="rdiv">
+        <code class="cls-code cls-code-nowrap" id="rcode">
+            <span id="rfilename"></span>
+            <pre class="cls-pre" contentEditable="true" id="rtext"></pre>
+        </code>
+    </div>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../resources/bootstrap/jquery.js"></script>
+    <script src="../resources/bootstrap/bootstrap.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../resources/bootstrap/ie10-viewport-bug-workaround.js"></script>
+
+    <script src="../mca.js"></script>
+    <script src="../transform.js"></script>
+    <script src="handle.js"></script>
+
+    <script>
+        $(document).ready( function()
+            {
+                var ltext = document.getElementById('ltext')
+                var rtext = document.getElementById('rtext')
+
+                var observer = new MutationObserver(function(muts){
+                    muts.forEach(function(mut){handleUpdate(); $()});
+                });
+
+                var config = {characterData: true, subtree: true};
+                observer.observe(ltext, config);
+                observer.observe(rtext, config);
+            });
+
+        document.getElementById('lfile').addEventListener('change', handleFileSelect, false);
+        document.getElementById('rfile').addEventListener('change', handleFileSelect, false);
+        document.getElementById('lrdiff').addEventListener('click', handleDiff, false);
+        document.getElementById('shuf').addEventListener('click', handleShuf, false);
+        document.getElementById('swap').addEventListener('click', handleSwap, false);
+        document.getElementById('wrap').addEventListener('click', handleWrap, false);
+        document.getElementById('syntax').addEventListener('click', handleSyntax, false);
+        document.getElementById('go_backend').addEventListener('click', handleGoBackend, false);
+
+        $('input[type=file]').click( function() {$(this).val('');} );
+
+        document.getElementById('scheme-1').addEventListener('click', function() {handleColorScheme(0)}, false);
+        document.getElementById('scheme-2').addEventListener('click', function() {handleColorScheme(1)}, false);
+        document.getElementById('scheme-3').addEventListener('click', function() {handleColorScheme(2)}, false);
+        document.getElementById('scheme-4').addEventListener('click', function() {handleColorScheme(3)}, false);
+
+        $("#wrap").click(function(e){console.log($('#minmatch').val());});
+    </script>
+</body></html>
