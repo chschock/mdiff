@@ -19,12 +19,6 @@ var colorSchemeHl = [
 
 var colorSchemeId = 0;
 
-function handleResize() {
-    var window_height = $(window).height();
-    var content_height = window_height - document.getElementById('contentrow').offsetTop;
-    $('.difftext').height(content_height);
-}
-
 function handleFileSelect(evt)
 {
     var f = evt.target.files[0]; // FileList object
